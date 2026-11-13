@@ -21,7 +21,19 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 record = json.loads((ROOT / 'build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/bsd/DEVELOPMENT/kern_exec.o.json')
                     .read_text().strip().rstrip(','))
-source = ROOT / 'package/LegacyDisplayStub.c'
+
+# tree.py links the base package as package/ and the device package as
+# kits/<kit>/.  The stub lives in the device package, so do not assume
+# package/LegacyDisplayStub.c exists in the assembled tree.
+def find_source():
+    candidates = [ROOT / 'package/LegacyDisplayStub.c']
+    candidates += sorted((ROOT / 'kits').glob('*/LegacyDisplayStub.c'))
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise SystemExit('LegacyDisplayStub.c not found in package/ or kits/*/')
+
+source = find_source()
 obj = OUT / 'LegacyDisplayStub.o'
 
 command = []

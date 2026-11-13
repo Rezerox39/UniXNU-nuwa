@@ -16,11 +16,16 @@ mkdir -p "$OUT"
 
 SDK=$(xcrun --sdk iphoneos --show-sdk-path)
 CC=$(xcrun --sdk iphoneos -f clang)
-SRC="$ROOT/package/LegacyDisplayStub.c"
 OBJ="$OUT/LegacyDisplayStub.o"
 ARCHIVE="$OUT/libBootstrapLegacyStub.a"
 
-test -f "$SRC" || { echo "missing $SRC" >&2; exit 1; }
+# tree.py links the base package as package/ and the device package as
+# kits/<kit>/. LegacyDisplayStub.c is part of the device package.
+SRC=
+for candidate in "$ROOT/package/LegacyDisplayStub.c" "$ROOT"/kits/*/LegacyDisplayStub.c; do
+  if [ -f "$candidate" ]; then SRC="$candidate"; break; fi
+done
+test -n "$SRC" || { echo "missing LegacyDisplayStub.c in package/ or kits/*/" >&2; exit 1; }
 "$CC" -target arm64-apple-ios17.0 -isysroot "$SDK" -mkernel -O2 \
       -ffreestanding -fno-stack-protector -fno-builtin \
       -c "$SRC" -o "$OBJ"
