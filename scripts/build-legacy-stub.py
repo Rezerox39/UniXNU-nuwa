@@ -21,7 +21,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 record = json.loads((ROOT / 'build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/bsd/DEVELOPMENT/kern_exec.o.json')
                     .read_text().strip().rstrip(','))
-source = ROOT / 'kits/sheng/LegacyDisplayStub.c'
+source = ROOT / 'package/LegacyDisplayStub.c'
 obj = OUT / 'LegacyDisplayStub.o'
 
 command = []
