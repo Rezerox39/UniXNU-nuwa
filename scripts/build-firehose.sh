@@ -54,4 +54,6 @@ if [ -f .cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a ]; then
   cp .cache/fakeroot/usr/local/lib/kernel/liblibfirehose_kernel.a \
     .cache/fakeroot/usr/local/lib/kernel/libfirehose_kernel.a
 fi
-xcrun lipo -info .cache/fakeroot/usr/local/lib/kernel/libfirehose_kernel.a
+# Informational only. Xcode 16's lipo can return non-zero for a thin archive
+# even when it printed the architecture, and that must not fail the kernel build.
+xcrun lipo -info .cache/fakeroot/usr/local/lib/kernel/libfirehose_kernel.a || true

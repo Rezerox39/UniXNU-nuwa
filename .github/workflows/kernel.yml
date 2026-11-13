@@ -39,6 +39,14 @@ on:
         description: 'Parallel jobs for the XNU build'
         type: string
         default: '3'
+      kernel_defconfig:
+        description: 'Final kernel defconfig (nuwa4k_defconfig for the 4 KiB chain)'
+        type: string
+        default: 'nuwa_defconfig'
+      bootstrap_defconfig:
+        description: 'Bootstrap defconfig that produces the prelinked candidate'
+        type: string
+        default: 'nuwa-bootstrap_defconfig'
 
 permissions:
   contents: read
@@ -94,7 +102,7 @@ jobs:
             UniXNU/out/ipsw
             UniXNU/out/nuwa/tree/build/xnu
             UniXNU/out/nuwa/tree/.cache
-          key: nuwa-kernel-${{ inputs.unixnu_ref || 'main' }}-${{ hashFiles('device/configs/nuwa_defconfig', 'device/configs/nuwa-bootstrap_defconfig', 'device/board.toml', 'device/feeds.toml') }}-${{ github.run_id }}
+          key: nuwa-kernel-${{ inputs.unixnu_ref || 'main' }}-${{ hashFiles('device/configs/nuwa_defconfig', 'device/configs/nuwa4k_defconfig', 'device/configs/nuwa-bootstrap_defconfig', 'device/board.toml', 'device/feeds.toml') }}-${{ github.run_id }}
           restore-keys: |
             nuwa-kernel-${{ inputs.unixnu_ref || 'main' }}-
             nuwa-kernel-
@@ -108,7 +116,7 @@ jobs:
         env:
           JOBS: ${{ inputs.jobs || '3' }}
         run: |
-          python3 ./unixnu defconfig nuwa-bootstrap_defconfig -D "$GITHUB_WORKSPACE/device"
+          python3 ./unixnu defconfig "${{ inputs.bootstrap_defconfig || 'nuwa-bootstrap_defconfig' }}" -D "$GITHUB_WORKSPACE/device"
           python3 ./unixnu build kernel -D "$GITHUB_WORKSPACE/device" -j "$JOBS" || true
           tree="$UNIXNU_OUT/nuwa/tree"
           test -d "$tree" || { echo "::error::the bootstrap pass did not assemble $tree"; exit 1; }
@@ -216,7 +224,7 @@ jobs:
         env:
           JOBS: ${{ inputs.jobs || '3' }}
         run: |
-          python3 ./unixnu defconfig nuwa_defconfig -D "$GITHUB_WORKSPACE/device"
+          python3 ./unixnu defconfig "${{ inputs.kernel_defconfig || 'nuwa_defconfig' }}" -D "$GITHUB_WORKSPACE/device"
           python3 ./unixnu build kernel -D "$GITHUB_WORKSPACE/device" -j "$JOBS"
 
       - name: Report the build state
@@ -456,7 +464,7 @@ jobs:
             echo "root    : $root ($(stat -c%s "$root") bytes)"
             extra+=(--data-ramdisk "$root")
           fi
-          python3 ./unixnu defconfig nuwa_defconfig -D "$GITHUB_WORKSPACE/device"
+          python3 ./unixnu defconfig "${{ inputs.kernel_defconfig || 'nuwa_defconfig' }}" -D "$GITHUB_WORKSPACE/device"
           python3 ./unixnu build payload -D "$GITHUB_WORKSPACE/device" --kernel "$kernel" \
             --unique-chip-id "${{ inputs.unique_chip_id }}" "${extra[@]}"
           python3 ./unixnu bootimg -D "$GITHUB_WORKSPACE/device" \

@@ -38,6 +38,9 @@ env:
   XNU_BOOT_PROGRESS: "0"
   XNU_NATIVE_MOBILE_DISPLAY: "0"
   XNU_ARMVIRT_PLATFORM: "0"
+  # Xcode 16 removed -Wunnecessary-virtual-specifier; -Wno-unknown-warning-option
+  # keeps the script default from becoming a fatal unknown warning under -Werror.
+  XNU_EXTRA_CFLAGS: "-Wno-reserved-identifier -Wno-pre-c11-compat -Wno-missing-designated-field-initializers -Wno-suggest-override -Wno-suggest-destructor-override -Wno-ms-bitfield-padding -Wno-unknown-warning-option"
 
 jobs:
   build:
