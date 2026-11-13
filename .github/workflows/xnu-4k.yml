@@ -41,7 +41,8 @@ env:
 
 jobs:
   build:
-    runs-on: macos-14
+    # macos-14 is no longer a hosted runner label; macos-15 is the current Xcode 16 image.
+    runs-on: macos-15
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
