@@ -521,6 +521,7 @@ else
   EXTRA_MAKE_ARGS+=("pcb.o_CFLAGS_ADD=")
   EXTRA_MAKE_ARGS+=("platform_tests.o_CFLAGS_ADD=")
 fi
+KERNEL_EXTRA_ARCHIVES=""
 if [ "${XNU_SOURCE_CORECRYPTO14:-0}" = 1 ]; then
   CRYPTO_ARCHIVE=$ROOT/build/corecrypto-2023/libcorecrypto_kernel_noasm-namespaced.a
   test -f "$CRYPTO_ARCHIVE"
@@ -709,9 +710,16 @@ PY_BINDINGS
     KERNEL_EXTRA_ARCHIVES="$KERNEL_EXTRA_ARCHIVES -Wl,-force_load,$ROOT/build/boot-progress/libBootProgress.a"
     KERNEL_ARCHIVE_DEPENDENCIES="$KERNEL_ARCHIVE_DEPENDENCIES $ROOT/build/boot-progress/libBootProgress.a"
   fi
-  KERNEL_EXTRA_ARCHIVES="$KERNEL_EXTRA_ARCHIVES ${XNU_EXTRA_LD_ARCHIVES:-}"
-  EXTRA_MAKE_ARGS+=("LD_KERNEL_ARCHIVES=$KERNEL_EXTRA_ARCHIVES")
   EXTRA_MAKE_ARGS+=("XNU_EXTERNAL_KERNEL_ARCHIVES=$KERNEL_ARCHIVE_DEPENDENCIES")
+fi
+# XNU_EXTRA_LD_ARCHIVES also has to reach the bootstrap pass, which deliberately
+# skips source crypto and therefore never enters the block above. The 4K
+# bsd_init references the legacy display hook unconditionally.
+if [ -n "${XNU_EXTRA_LD_ARCHIVES:-}" ]; then
+  KERNEL_EXTRA_ARCHIVES="${KERNEL_EXTRA_ARCHIVES:-} $XNU_EXTRA_LD_ARCHIVES"
+fi
+if [ -n "${KERNEL_EXTRA_ARCHIVES:-}" ]; then
+  EXTRA_MAKE_ARGS+=("LD_KERNEL_ARCHIVES=$KERNEL_EXTRA_ARCHIVES")
 fi
 python3 - "${XNU_NATIVE_AES:-0}" "${XNU_NATIVE_AES_ARCHIVE:-$ROOT/build/native-aes/libNativeAES.a}" \
   "${XNU_NATIVE_VIRTIO_BLOCK:-0}" "${XNU_NATIVE_VIRTIO_BLOCK_ARCHIVE:-$ROOT/build/native-virtio-block/libNativeVirtioBlock.a}" \

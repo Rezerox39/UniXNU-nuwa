@@ -25,6 +25,5 @@ test -f "$SRC" || { echo "missing $SRC" >&2; exit 1; }
       -ffreestanding -fno-stack-protector -fno-builtin \
       -c "$SRC" -o "$OBJ"
 rm -f "$ARCHIVE"
-xcrun --sdk iphoneos ar rcs "$ARCHIVE" "$OBJ"
-xcrun --sdk iphoneos nm -gU "$ARCHIVE" | grep -E 'native_legacy_display_(probe|late_probe)|boot_progress_poll' >&2 || true
+xcrun ar rcs "$ARCHIVE" "$OBJ"
 echo "bootstrap legacy stub: $ARCHIVE"
