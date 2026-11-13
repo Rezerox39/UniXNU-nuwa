@@ -164,6 +164,19 @@ jobs:
               print(f'cached {len(entries):>3} entries -> {name}')
           PY
 
+      - name: Build the bootstrap legacy display stub
+        # bsd_init in the 4K kernel references native_legacy_display_probe()
+        # unconditionally. The normal archive builder needs kern_exec.o.json,
+        # which does not exist before the bootstrap compile; this no-op archive
+        # lets the prelinked candidate link. The final build still uses the
+        # record-driven build-legacy-stub.py archive.
+        working-directory: UniXNU
+        run: |
+          tree="$UNIXNU_OUT/nuwa/tree"
+          bash "$tree/scripts/build-bootstrap-legacy-stub.sh"
+          test -f "$tree/build/bootstrap-legacy-stub/libBootstrapLegacyStub.a" || {
+            echo "::error::bootstrap legacy stub archive was not produced"; exit 1; }
+
       - name: Bootstrap kernel and prelinked candidate
         working-directory: UniXNU
         env:

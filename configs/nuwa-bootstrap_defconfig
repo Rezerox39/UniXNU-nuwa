@@ -37,6 +37,11 @@ CONFIG_XNU_BOOT_PROGRESS=n
 CONFIG_XNU_NATIVE_MOBILE_DISPLAY=n
 CONFIG_XNU_ARMVIRT_PLATFORM=n
 
+# The 4K patch makes bsd_init reference this hook unconditionally. The normal
+# build-legacy-stub.py needs kern_exec.o.json, so use a no-op archive that the
+# workflow builds without a compile record before the bootstrap link.
+CONFIG_XNU_EXTRA_LD_ARCHIVES="{tree}/build/bootstrap-legacy-stub/libBootstrapLegacyStub.a"
+
 # Xcode 16's clang removed -Wunnecessary-virtual-specifier; with -Werror an unknown
 # -Wno-* is fatal, so override the script default instead of patching it.
 CONFIG_XNU_EXTRA_CFLAGS="-Wno-reserved-identifier -Wno-pre-c11-compat -Wno-missing-designated-field-initializers -Wno-suggest-override -Wno-suggest-destructor-override -Wno-ms-bitfield-padding -Wno-unknown-warning-option"
